@@ -7,8 +7,8 @@ import java.util.List;
 
 /**
  * @author areynaga
- * Static nodes information implementation; in this scenario there are three servers:
- * SERVER_A, SERVER_B, SERVER_C, the cetral server is SERVER_A
+ * Static nodes information implementation; in this scenario there are two servers:
+ * SERVER_A, SERVER_B, the cetral server is SERVER_A
  */
 public class LocalNodesInformation implements NodesInformation {
 
@@ -17,7 +17,7 @@ public class LocalNodesInformation implements NodesInformation {
 	public List<String> getLocalNodeList() {
 		List<String> valRet = new ArrayList<String>();
 		valRet.add("SERVER_B");
-		valRet.add("SERVER_C");
+		//valRet.add("SERVER_C");
 		return valRet;
 	}
 

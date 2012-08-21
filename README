@@ -1,2 +1,5 @@
 Data Consistency PoC
+Version 0_2
+Replication of CUD messages including changes in in-memory HSQLDB database, 
+no global transactions are considered  
 

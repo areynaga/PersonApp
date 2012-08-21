@@ -1,9 +1,8 @@
 This folder contains war files with the same binary code but with different configuration; 
-three servers are configured and ready to deploy in a Tomcat server:
+two servers are configured and ready to deploy in a Tomcat server:
 
 	- Server A (central node)
 	- Server B (local node)
-	- Server C (local node)
-
-A soapUI project is also included to test the web services, call should be executed from the 
-server_B or server_C
+	
+A soapUI project is also included to test the web services, calls should be executed from the 
+server_B. Changes are performed in in-memory databases

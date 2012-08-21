@@ -62,13 +62,25 @@
 		
 	</bean>
 	
+	<tx:annotation-driven transaction-manager="myTransactionManager" />
+
+ 
+	<bean id="myTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+		<property name="persistenceUnitName" value="PersonDB" />
+	</bean>
 	
+	<bean id="personDao" class="be.steria.datapoc.dao.PersonDaoImpl" />
 	
 
 	<bean id="personProcessor" class="be.steria.datapoc.services.PersonProcessorImpl" >
 		<property name="serverName" value="${server.name}"/>
 		  
-		
+		<property name="personDao" ref="personDao" />
 		
 	</bean>
 	

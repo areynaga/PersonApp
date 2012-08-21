@@ -19,7 +19,7 @@
 	</properties>
 
 	<build>
-		<finalName>PersonApp_A</finalName>
+		<finalName>PersonApp_B</finalName>
 
 		<plugins>
 			<plugin>

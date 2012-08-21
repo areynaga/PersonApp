@@ -13,7 +13,7 @@
 
 			<property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver" />
 	    
-			<property name="hibernate.connection.url" value="jdbc:hsqldb:hsql://localhost/PersonDB_B" />
+			<property name="hibernate.connection.url" value="jdbc:hsqldb:mem:PersonDB" />
 
 			<property name="hibernate.connection.username" value="SA" />
 
