@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" targetNamespace="http://datapoc.steria.be/model"
+	xmlns:tns="http://datapoc.steria.be/model">
+
+	<xs:element name="createPersonRequest" type="tns:createPersonRequest" />
+	<xs:element name="serviceResponse" type="tns:serviceResponse" />
+
+	<xs:element name="deletePersonRequest" type="tns:deletePersonRequest" />
+	
+
+	<xs:element name="updatePersonRequest" type="tns:updatePersonRequest" />
+	
+
+	<xs:complexType name="createPersonRequest">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="source" type="xs:string" />
+			<xs:element minOccurs="1" name="person" type="tns:person" />
+		</xs:sequence>
+	</xs:complexType>
+	
+
+	<xs:complexType name="deletePersonRequest">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="source" type="xs:string" />
+			<xs:element minOccurs="1" name="idPerson" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	
+
+	<xs:complexType name="updatePersonRequest">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="source" type="xs:string" />
+			<xs:element minOccurs="1" name="person" type="tns:person" />
+		</xs:sequence>
+	</xs:complexType>
+	
+
+	<xs:complexType name="person">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="idPerson" nillable="false"
+				type="xs:string" />
+			<xs:element minOccurs="0" name="firstName" type="xs:string" />
+			<xs:element minOccurs="0" name="lastName" type="xs:string" />
+			<xs:element minOccurs="0" name="birthDate" type="xs:date" />
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="address" 
+					type="tns:address" />
+
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="address">
+		<xs:sequence>
+			<xs:element name="street" type="xs:string" />
+			<xs:element name="number" type="xs:int" />
+			<xs:element name="city" type="xs:string" />
+			<xs:element name="country" type="xs:string" />
+			<xs:element name="postalCode" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="serviceResponse">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="idResponse" type="xs:string" />
+			<xs:element minOccurs="0" name="message" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:element name="unexpectedError" type="tns:unexpectedError" />
+
+	<xs:complexType name="unexpectedError">
+		<xs:sequence>
+			<xs:element name="message" nillable="true" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+</xs:schema>
