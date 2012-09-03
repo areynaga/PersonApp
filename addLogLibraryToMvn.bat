@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=lib\LoggerService.jar -DgroupId=be.steria.datapoc -DartifactId=loggerService -Dversion=1.0 -Dpackaging=jar

@@ -5,7 +5,9 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.DataFormat;
 
+import be.steria.datapoc.EventLogger.model.NodeEvent;
 import be.steria.datapoc.model.CUDRequest;
+import be.steria.datapoc.services.NodeLogger;
 import be.steria.datapoc.services.ServerSourcePredicate;
 
 public class SoapServiceRoute extends RouteBuilder{
@@ -15,6 +17,7 @@ public class SoapServiceRoute extends RouteBuilder{
 	private String inputQueue;
 	private String outputQueue;
 	
+	private NodeLogger nodeLogger;
 	
 	
 	public SoapServiceRoute(String cxfEndPoint, DataFormat jaxb,
@@ -48,6 +51,18 @@ public class SoapServiceRoute extends RouteBuilder{
 				.inOnly(outputQueue)
 				.beanRef("personProcessor", "createResponse");
 		
+	}
+
+
+
+	public NodeLogger getNodeLogger() {
+		return nodeLogger;
+	}
+
+
+
+	public void setNodeLogger(NodeLogger nodeLogger) {
+		this.nodeLogger = nodeLogger;
 	}
 
 }

@@ -1,5 +1,9 @@
 package be.steria.datapoc.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import be.steria.datapoc.EventLogger.model.NodeEvent;
+import be.steria.datapoc.EventLogger.model.NodeEventType;
 import be.steria.datapoc.dao.DuplicatedPersonId;
 import be.steria.datapoc.dao.PersonDao;
 import be.steria.datapoc.dao.PersonIdNotFound;
@@ -11,7 +15,10 @@ import be.steria.datapoc.model.UpdatePersonRequest;
 
 public class PersonProcessorImpl implements PersonProcessor {
 	
-	private String serverName;
+	@Autowired
+	private NodeLoggerImpl nodeLogger;
+	
+	private NodesInformation nodesInformation;
 	
 	private PersonDao personDao;
 	
@@ -27,19 +34,26 @@ public class PersonProcessorImpl implements PersonProcessor {
 	}
 	
 	private CreatePersonRequest createPerson(CreatePersonRequest createPersonRequest) throws DuplicatedPersonId {
-		System.out.println(serverName + ": Creating person with id: " + createPersonRequest.getPerson().getIdPerson());
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.CREATION, 
+						"PersonId: " + createPersonRequest.getPerson().getIdPerson()));
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Creating person with id: " + createPersonRequest.getPerson().getIdPerson());
 		personDao.createPerson(createPersonRequest.getPerson());
 		return createPersonRequest;
 	}
 	
 	private UpdatePersonRequest updatePerson(UpdatePersonRequest updatePersonRequest) throws PersonIdNotFound {
-		System.out.println(serverName + ": Updating person with id: " + updatePersonRequest.getPerson().getIdPerson());
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.UPDATE, 
+				"Personid: " + updatePersonRequest.getPerson().getIdPerson()));
+
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Updating person with id: " + updatePersonRequest.getPerson().getIdPerson());
 		personDao.updatePerson(updatePersonRequest.getPerson());
 		return updatePersonRequest;
 	}
 	
 	private DeletePersonRequest deletePerson(DeletePersonRequest deletePersonRequest) throws PersonIdNotFound {
-		System.out.println(serverName + ": Deleting person with id: " + deletePersonRequest.getIdPerson());
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.DELETE, 
+				"Personid: " + deletePersonRequest.getIdPerson()));
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Deleting person with id: " + deletePersonRequest.getIdPerson());
 		personDao.deletePerson(deletePersonRequest.getIdPerson());
 		return deletePersonRequest;
 	}
@@ -51,13 +65,7 @@ public class PersonProcessorImpl implements PersonProcessor {
 		return response;
 	}
 
-	public String getServerName() {
-		return serverName;
-	}
 
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
-	}
 
 	public PersonDao getPersonDao() {
 		return personDao;
@@ -65,5 +73,13 @@ public class PersonProcessorImpl implements PersonProcessor {
 
 	public void setPersonDao(PersonDao personDao) {
 		this.personDao = personDao;
+	}
+
+	public NodesInformation getNodesInformation() {
+		return nodesInformation;
+	}
+
+	public void setNodesInformation(NodesInformation nodesInformation) {
+		this.nodesInformation = nodesInformation;
 	}
 }

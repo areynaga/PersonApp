@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import be.steria.datapoc.EventLogger.model.NodeEvent;
+import be.steria.datapoc.EventLogger.model.NodeEventType;
 import be.steria.datapoc.model.CUDReplica;
 import be.steria.datapoc.model.CUDRequest;
 import be.steria.datapoc.model.CreatePersonRequest;
@@ -14,14 +17,10 @@ import be.steria.datapoc.model.UpdatePersonRequest;
 
 public class ServiceReplicatorImpl implements ServiceReplicator{
 	
-	
+	@Autowired
+	private NodeLogger nodeLogger;
 	
 	private NodesInformation nodesInformation;
-	
-	
-	
-
-	
 	
 	private void replicateToNode(CUDRequest cudRequest, String destination) throws UnexpectedError {
 		PersonService personService = null;
@@ -29,6 +28,9 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
         clientFactory.setAddress(nodesInformation.getAddress(destination));
 		clientFactory.setServiceClass(PersonService.class);
 		personService = (PersonService) clientFactory.create();
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.MESSAGE_SENT, 
+				"Destination: " + destination));
+		
 		System.out.println("Sending to " + destination);
 		
 		if (cudRequest instanceof CreatePersonRequest)
@@ -57,7 +59,7 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
 		CUDReplica replica = new CUDReplica();
 		replica.setRequest(cudRequest);
 		replica.setDestination(getDestinations(cudRequest.getSource()));
-		cudRequest.setSource(nodesInformation.getCurrentNodeName());
+		cudRequest.setSource(nodesInformation.getCurrentNodeId());
 		
 		return replica;
 	}
@@ -65,17 +67,16 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
 	public CUDReplica createReplicaForCentral(CUDRequest cudRequest) {
 		CUDReplica replica = new CUDReplica();
 		replica.setRequest(cudRequest);
-		cudRequest.setSource(nodesInformation.getCurrentNodeName());
-		replica.getDestination().add(nodesInformation.getCentralNodeName());
+		cudRequest.setSource(nodesInformation.getCurrentNodeId());
+		replica.getDestination().add(nodesInformation.getCentralNodeId());
 		return replica;
 	}
 	
 	private List<String> getDestinations(String source) {
 		List<String> destinations = new ArrayList<String>();
 		for (String nodeName : nodesInformation.getLocalNodeList()) {
-			if (!nodeName.equals(source) && !nodeName.equals(nodesInformation.getCurrentNodeName())) {
+			if (!nodeName.equals(source) && !nodeName.equals(nodesInformation.getCurrentNodeId())) {
 				destinations.add(nodeName);
-				System.out.println(nodesInformation.getCurrentNodeName() +  " Destination: " + nodeName);
 			}
 		}
 		

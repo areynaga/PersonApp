@@ -5,18 +5,24 @@ import org.apache.camel.Predicate;
 
 public class CentralNodePredicate implements Predicate {
 
-	private String centralNode;
+	private NodesInformation nodesInformation;
 	
-	public String getCentralNode() {
-		return centralNode;
-	}
-
-	public void setCentralNode(String centralNode) {
-		this.centralNode = centralNode;
-	}
+	
 
 	public boolean matches(Exchange exchange) {
-		return centralNode.equals("true");
+		return nodesInformation.getCurrentNodeId().equals(nodesInformation.getCentralNodeId());
+	}
+
+
+
+	public NodesInformation getNodesInformation() {
+		return nodesInformation;
+	}
+
+
+
+	public void setNodesInformation(NodesInformation nodesInformation) {
+		this.nodesInformation = nodesInformation;
 	}
 
 }

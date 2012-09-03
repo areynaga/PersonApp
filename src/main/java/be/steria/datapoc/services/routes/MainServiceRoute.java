@@ -6,6 +6,7 @@ import org.apache.camel.spi.DataFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import be.steria.datapoc.services.CentralNodePredicate;
+import be.steria.datapoc.services.NodesInformation;
 import be.steria.datapoc.services.routes.InputQueueRoute;
 import be.steria.datapoc.services.routes.OutputQueueRoute;
 import be.steria.datapoc.services.routes.SoapServiceRoute;
@@ -13,34 +14,41 @@ import be.steria.datapoc.services.routes.SoapServiceRoute;
 
 public class MainServiceRoute extends RouteBuilder {
 	
-	private String serverName;
-	
-	private String inputQueueName;
-	private String outputQueueName;
-	
-	
-	
-	public String getInputQueueName() {
-		return inputQueueName;
-	}
+	private NodesInformation nodesInformation;
 
-	public void setInputQueueName(String inputQueueName) {
-		this.inputQueueName = inputQueueName;
-	}
-
-	public String getOutputQueueName() {
-		return outputQueueName;
-	}
-
-	public void setOutputQueueName(String outputQueueName) {
-		this.outputQueueName = outputQueueName;
-	}
-
-	@Autowired
 	private CentralNodePredicate centralNodePredicate;
+	
+	
+
+	public NodesInformation getNodesInformation() {
+		return nodesInformation;
+	}
+
+
+
+	public void setNodesInformation(NodesInformation nodesInformation) {
+		this.nodesInformation = nodesInformation;
+	}
+
+
+
+	public CentralNodePredicate getCentralNodePredicate() {
+		return centralNodePredicate;
+	}
+
+
+
+	public void setCentralNodePredicate(CentralNodePredicate centralNodePredicate) {
+		this.centralNodePredicate = centralNodePredicate;
+	}
+
+
 
 	@Override
 	public void configure() throws Exception {
+		
+		String inputQueueName = "inputQueue" + nodesInformation.getCurrentNodeId();
+		String outputQueueName = "outputQueue" + nodesInformation.getCurrentNodeId();
 		
 		DataFormat jaxb = new JaxbDataFormat("be.steria.datapoc.model");
 		
@@ -57,12 +65,6 @@ public class MainServiceRoute extends RouteBuilder {
 		
 	}
 
-	public String getServerName() {
-		return serverName;
-	}
-
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
-	}
+	
 
 }
