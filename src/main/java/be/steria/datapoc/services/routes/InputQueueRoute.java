@@ -26,6 +26,7 @@ public class InputQueueRoute extends RouteBuilder {
 		
 		
 		from(inputQueue)
+		.transacted()
 		.unmarshal(jaxb)
 		.beanRef("personProcessor", "processRequest")
 		.filter(predicate)

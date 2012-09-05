@@ -31,19 +31,42 @@
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
 	
-	
+	<!--  
 	<bean id="activemq"
 		class="org.apache.activemq.camel.component.ActiveMQComponent">
 		<property name="brokerURL" value="vm://localhost:61616"/>
 	</bean>
+-->
 
-
-	<broker:broker useJmx="false" persistent="false" brokerName="localhost">
-		<broker:transportConnectors>
-			<broker:transportConnector uri="vm://localhost:61616"/>
-		</broker:transportConnectors>
-	</broker:broker>
+	<bean id="atomikosJmsConnectionFactory"
+          class="com.atomikos.jms.AtomikosConnectionFactoryBean" >
+        <property name="uniqueResourceName" value="jmsConFact"/>
+        <property name="xaConnectionFactory" ref="jmsXaConnectionFactory"/>
+    </bean>
 	 
+	
+	<!-- Is the ConnectionFactory to connect to the JMS broker -->
+    <!-- notice how we must use the XA connection factory -->
+    <bean id="jmsXaConnectionFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory" >
+        <property name="brokerURL" value="tcp://localhost:61616"/>
+    </bean>
+
+    <!-- define the activemq Camel component so we can integrate with the AMQ broker below -->
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent" >
+        <!-- must indicate that we use transacted acknowledge mode -->
+        <property name="transacted" value="true"/>
+        <!-- refer to the transaction manager -->
+        <property name="transactionManager" ref="jtaTransactionManager"/>
+    </bean>
+
+    <!-- setup a local JMS Broker for testing purpose 
+    <broker:broker id="my-broker" useJmx="false" persistent="false" brokerName="localhost">
+        <broker:transportConnectors>
+            <broker:transportConnector uri="tcp://localhost:61616"/>
+        </broker:transportConnectors>
+    </broker:broker>
+	-->
+	
 	
  
  
@@ -60,21 +83,51 @@
 		<property name="centralNodePredicate" ref="centralNodePredicate" />
 	</bean>
 	
-	<tx:annotation-driven transaction-manager="myTransactionManager" />
+	
+	<bean id="dataSource" class="com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean">
+        <property name="uniqueResourceName" value="hsqldb"/>
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:mem:inMemoryPersonDB"/>
+        <property name="user" value="sa"/>
+        <property name="password" value=""/>
+        <property name="poolSize" value="3"/>
+    </bean>
 
- 
-	<bean id="myTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-		<property name="entityManagerFactory" ref="entityManagerFactory" />
-	</bean>
 
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		
-		<property name="jpaVendorAdapter">
-            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
-        </property>
+		<property name="dataSource" ref="dataSource" />
 		<property name="persistenceUnitName" value="PersonDB" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</property>
 	</bean>
+
+
+	<bean id="atomikosTransactionManager" 
+          class="com.atomikos.icatch.jta.UserTransactionManager"
+          init-method="init" destroy-method="close" >
+        <!-- when close is called, should we force transactions to terminate or not? -->
+        <property name="forceShutdown" value="false"/>
+    </bean>
+
+    <!-- this is some atomikos setup you must do -->
+    <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp" >
+        <property name="transactionTimeout" value="300"/>
+       
+    </bean>
+    
+    
+
+
+	<bean id="jtaTransactionManager"  
+      class="org.springframework.transaction.jta.JtaTransactionManager"> 
+    	<property name="transactionManager" ref="atomikosTransactionManager" /> 
+   		<property name="userTransaction" ref="atomikosUserTransaction" /> 
+	</bean> 
+	
+	<tx:annotation-driven transaction-manager="jtaTransactionManager" />
+	
 	
 	<bean id="personDao" class="be.steria.datapoc.dao.PersonDaoImpl" />
 	
@@ -82,7 +135,7 @@
 	<bean id="personProcessor" class="be.steria.datapoc.services.PersonProcessorImpl" >
 		<property name="nodesInformation" ref="nodesInformation" />
 		<property name="personDao" ref="personDao" />
-		
+		<property name="logEvents" value="true" />
 	</bean>
 	
 	
@@ -96,10 +149,7 @@
 	
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
-		
-		 
 		 <camel:routeBuilder ref="personServiceRoute"/>
-		
 	</camelContext>
 
 	<bean id="nodeLogger" class="be.steria.datapoc.services.NodeLoggerImpl">

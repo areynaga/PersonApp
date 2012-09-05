@@ -1,6 +1,8 @@
-lib/
 target/
 .classpath
 .project
 .settings
+*.log
+*.out
+*.epoch
 

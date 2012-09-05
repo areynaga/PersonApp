@@ -29,7 +29,7 @@ import be.steria.datapoc.model.Address;
 import be.steria.datapoc.model.Person;
 
 @ContextConfiguration(locations = { "file:src/test/resources/applicationContext-test.xml" })
-@TransactionConfiguration(transactionManager = "myTransactionManager", defaultRollback = true)
+@TransactionConfiguration(transactionManager = "jtaTransactionManager", defaultRollback = true)
 @Transactional
 public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests  {
 	@Autowired
@@ -115,9 +115,8 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     @Test
     public void testCreate() {
         try {
-        	personDao.createPerson(testPersons.get(0));
-			personDao.createPerson(testPersons.get(1));
-	 			
+        	createPerson(testPersons.get(0));
+        	createPerson(testPersons.get(1));
 			entityManager.flush();
 			
         	for (Person person : testPersons)
@@ -130,11 +129,28 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
         
     }
     
+    @Transactional
+    private void createPerson(Person person) throws DuplicatedPersonId {
+    	personDao.createPerson(person);
+    }
+    
+    @Transactional
+    private void updatePerson(Person person) throws PersonIdNotFound {
+    	personDao.updatePerson(person);
+    }
+    
+    @Transactional
+    private void deletePerson(String personId) throws PersonIdNotFound {
+    	personDao.deletePerson(personId);
+    }
+    
+    
     @Test(expected=PersonIdNotFound.class)
     public void testUpdPersonNotFound() throws PersonIdNotFound {
     	try {
-	    	personDao.createPerson(testPersons.get(0));
-			personDao.createPerson(testPersons.get(1));
+    		createPerson(testPersons.get(0));
+        	createPerson(testPersons.get(1));
+			
     	} catch (DuplicatedPersonId dip) {
     		Assert.fail(dip.getMessage());
     	}
@@ -144,7 +160,7 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     	Person updPerson ;
     	updPerson = new Person();
     	updPerson.setIdPerson("UNK");
-    	personDao.updatePerson(updPerson);
+    	updatePerson(updPerson);
     	
     }
     
@@ -152,7 +168,8 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     @Test(expected=DuplicatedPersonId.class)
     public void testCreateDuplicateId() throws DuplicatedPersonId {
     	try {
-	    	personDao.createPerson(testPersons.get(0));
+    		createPerson(testPersons.get(0));
+	    	
     	} catch (DuplicatedPersonId dip) {
     		Assert.fail(dip.getMessage());
     	}
@@ -160,14 +177,16 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     	Person newPerson ;
     	newPerson = new Person();
     	newPerson.setIdPerson("ABC");
-    	personDao.createPerson(newPerson);
+    	createPerson(newPerson);
+    	
     }
     
     
     @Test
     public void testUpdate() {
     	try {
-	    	personDao.createPerson(testPersons.get(0));
+    		createPerson(testPersons.get(0));
+	    	
 		} catch (DuplicatedPersonId dip) {
     		Assert.fail(dip.getMessage());
     	}
@@ -194,7 +213,8 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     	updPerson.getAddress().add(address);
     	
     	try {
-    		personDao.updatePerson(updPerson);
+    		updatePerson(updPerson);
+    		
     		entityManager.flush();
     		verifyPersonInDB(updPerson);
     	} catch (Exception ex) {
@@ -209,11 +229,12 @@ public class PersonDaoTest extends AbstractTransactionalJUnit4SpringContextTests
     @Test
     public void testDelete() {
     	try {
-	    	personDao.createPerson(testPersons.get(0));
-			personDao.createPerson(testPersons.get(1));
+    		createPerson(testPersons.get(0));
+    		createPerson(testPersons.get(1));
+    		
+	    	
+			deletePerson(testPersons.get(0).getIdPerson());
 			
-			
-			personDao.deletePerson(testPersons.get(0).getIdPerson());
 			entityManager.flush();
 			
 			verifyNoPersonInDB(testPersons.get(0).getIdPerson());

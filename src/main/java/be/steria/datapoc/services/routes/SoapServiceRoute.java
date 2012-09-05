@@ -45,6 +45,7 @@ public class SoapServiceRoute extends RouteBuilder{
 				.inOnly(inputQueue)
 				.beanRef("personProcessor", "createResponse")
 			.otherwise()
+				.transacted()
 				.beanRef("personProcessor", "processRequest")
 				.beanRef("serviceReplicator", "createReplicaForCentral")
 				.marshal(jaxb)

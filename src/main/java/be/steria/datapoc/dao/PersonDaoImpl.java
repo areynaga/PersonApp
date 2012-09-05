@@ -24,7 +24,7 @@ public class PersonDaoImpl implements PersonDao {
 		this.entityManager = entityManager;
 	}
 
-	@Transactional
+	
 	public void createPerson(Person person) throws DuplicatedPersonId {
 		if (getPersonById(person.getIdPerson()) == null) 
 			getEntityManager().persist(person);
@@ -32,7 +32,7 @@ public class PersonDaoImpl implements PersonDao {
 			throw new DuplicatedPersonId(person.getIdPerson());
 	}
 
-	@Transactional
+	
 	public void updatePerson(Person person) throws PersonIdNotFound {
 		Person storedPerson = getPersonById(person.getIdPerson()); 
 
@@ -46,7 +46,7 @@ public class PersonDaoImpl implements PersonDao {
 		}
 	}
 
-	@Transactional
+	
 	public void deletePerson(String personId) throws PersonIdNotFound {
 		Person storedPerson = getPersonById(personId); 
 

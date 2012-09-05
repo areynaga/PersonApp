@@ -18,6 +18,8 @@ public class PersonProcessorImpl implements PersonProcessor {
 	@Autowired
 	private NodeLoggerImpl nodeLogger;
 	
+	private String logEvents;
+	
 	private NodesInformation nodesInformation;
 	
 	private PersonDao personDao;
@@ -33,16 +35,20 @@ public class PersonProcessorImpl implements PersonProcessor {
 			throw new RuntimeException("Operation not known");
 	}
 	
+	
 	private CreatePersonRequest createPerson(CreatePersonRequest createPersonRequest) throws DuplicatedPersonId {
-		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.CREATION, 
+		if (logEvents.equals("true"))
+			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.CREATION, 
 						"PersonId: " + createPersonRequest.getPerson().getIdPerson()));
 		System.out.println(nodesInformation.getCurrentNodeId() + ": Creating person with id: " + createPersonRequest.getPerson().getIdPerson());
 		personDao.createPerson(createPersonRequest.getPerson());
 		return createPersonRequest;
 	}
 	
+	
 	private UpdatePersonRequest updatePerson(UpdatePersonRequest updatePersonRequest) throws PersonIdNotFound {
-		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.UPDATE, 
+		if (logEvents.equals("true"))
+			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.UPDATE, 
 				"Personid: " + updatePersonRequest.getPerson().getIdPerson()));
 
 		System.out.println(nodesInformation.getCurrentNodeId() + ": Updating person with id: " + updatePersonRequest.getPerson().getIdPerson());
@@ -50,8 +56,10 @@ public class PersonProcessorImpl implements PersonProcessor {
 		return updatePersonRequest;
 	}
 	
+	
 	private DeletePersonRequest deletePerson(DeletePersonRequest deletePersonRequest) throws PersonIdNotFound {
-		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.DELETE, 
+		if (logEvents.equals("true"))
+			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.DELETE, 
 				"Personid: " + deletePersonRequest.getIdPerson()));
 		System.out.println(nodesInformation.getCurrentNodeId() + ": Deleting person with id: " + deletePersonRequest.getIdPerson());
 		personDao.deletePerson(deletePersonRequest.getIdPerson());
@@ -81,5 +89,15 @@ public class PersonProcessorImpl implements PersonProcessor {
 
 	public void setNodesInformation(NodesInformation nodesInformation) {
 		this.nodesInformation = nodesInformation;
+	}
+
+
+	public String getLogEvents() {
+		return logEvents;
+	}
+
+
+	public void setLogEvents(String logEvents) {
+		this.logEvents = logEvents;
 	}
 }
