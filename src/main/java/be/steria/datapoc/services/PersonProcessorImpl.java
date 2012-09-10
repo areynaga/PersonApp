@@ -37,32 +37,35 @@ public class PersonProcessorImpl implements PersonProcessor {
 	
 	
 	private CreatePersonRequest createPerson(CreatePersonRequest createPersonRequest) throws DuplicatedPersonId {
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Creating person with id: " + createPersonRequest.getPerson().getIdPerson());
+		personDao.createPerson(createPersonRequest.getPerson());
 		if (logEvents.equals("true"))
 			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.CREATION, 
 						"PersonId: " + createPersonRequest.getPerson().getIdPerson()));
-		System.out.println(nodesInformation.getCurrentNodeId() + ": Creating person with id: " + createPersonRequest.getPerson().getIdPerson());
-		personDao.createPerson(createPersonRequest.getPerson());
+		
 		return createPersonRequest;
 	}
 	
 	
 	private UpdatePersonRequest updatePerson(UpdatePersonRequest updatePersonRequest) throws PersonIdNotFound {
+		
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Updating person with id: " + updatePersonRequest.getPerson().getIdPerson());
+		personDao.updatePerson(updatePersonRequest.getPerson());
 		if (logEvents.equals("true"))
 			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.UPDATE, 
 				"Personid: " + updatePersonRequest.getPerson().getIdPerson()));
 
-		System.out.println(nodesInformation.getCurrentNodeId() + ": Updating person with id: " + updatePersonRequest.getPerson().getIdPerson());
-		personDao.updatePerson(updatePersonRequest.getPerson());
 		return updatePersonRequest;
 	}
 	
 	
 	private DeletePersonRequest deletePerson(DeletePersonRequest deletePersonRequest) throws PersonIdNotFound {
+		System.out.println(nodesInformation.getCurrentNodeId() + ": Deleting person with id: " + deletePersonRequest.getIdPerson());
+		personDao.deletePerson(deletePersonRequest.getIdPerson());
 		if (logEvents.equals("true"))
 			nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.DELETE, 
 				"Personid: " + deletePersonRequest.getIdPerson()));
-		System.out.println(nodesInformation.getCurrentNodeId() + ": Deleting person with id: " + deletePersonRequest.getIdPerson());
-		personDao.deletePerson(deletePersonRequest.getIdPerson());
+		
 		return deletePersonRequest;
 	}
 	

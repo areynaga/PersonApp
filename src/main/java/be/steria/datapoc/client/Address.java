@@ -1,15 +1,9 @@
 
-package be.steria.datapoc.model;
+package be.steria.datapoc.client;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -44,17 +38,8 @@ import javax.xml.bind.annotation.XmlType;
     "country",
     "postalCode"
 })
-@Entity
 public class Address {
 
-	
-	@Id
-	@Column(name="ID_ADDRESS")
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@XmlTransient
-	protected int idAddress;
-	
-	
     @XmlElement(required = true)
     protected String street;
     protected int number;
@@ -63,7 +48,6 @@ public class Address {
     @XmlElement(required = true)
     protected String country;
     @XmlElement(required = true)
-    @Column(name="POSTAL_CODE")
     protected String postalCode;
 
     /**
@@ -178,8 +162,4 @@ public class Address {
         this.postalCode = value;
     }
 
-	
-
-    
-    
 }

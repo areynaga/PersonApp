@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.hadoop.mapreduce.server.tasktracker.userlogs.UserLogEvent.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import be.steria.datapoc.EventLogger.model.NodeEvent;
@@ -28,8 +29,6 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
         clientFactory.setAddress(nodesInformation.getAddress(destination));
 		clientFactory.setServiceClass(PersonService.class);
 		personService = (PersonService) clientFactory.create();
-		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.MESSAGE_SENT, 
-				"Destination: " + destination));
 		
 		System.out.println("Sending to " + destination);
 		
@@ -39,6 +38,9 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
 			personService.updatePerson((UpdatePersonRequest) cudRequest);
 		else if (cudRequest instanceof DeletePersonRequest)
 			personService.deletePerson((DeletePersonRequest) cudRequest);
+		
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.MESSAGE_SENT, 
+				"Destination: " + destination));
 		
 	}
 
@@ -74,13 +76,16 @@ public class ServiceReplicatorImpl implements ServiceReplicator{
 	
 	private List<String> getDestinations(String source) {
 		List<String> destinations = new ArrayList<String>();
+		String logDest = "";
 		for (String nodeName : nodesInformation.getLocalNodeList()) {
 			if (!nodeName.equals(source) && !nodeName.equals(nodesInformation.getCurrentNodeId())) {
 				destinations.add(nodeName);
+				logDest = logDest + ":" + nodeName;
 			}
 		}
 		
-		
+		nodeLogger.registerEvent(new NodeEvent(nodesInformation.getCurrentNodeId(), NodeEventType.OTHER, 
+				"Destinations: " + logDest + "; Source: " + source));
 		
 		return destinations;
 	}

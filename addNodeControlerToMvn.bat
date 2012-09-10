@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=lib\NodeControlerService.jar -DgroupId=be.steria.datapoc -DartifactId=NodeControlerService -Dversion=1.0 -Dpackaging=jar

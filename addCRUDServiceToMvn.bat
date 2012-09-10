@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=lib\CRUDPersonService.jar -DgroupId=be.steria.datapoc -DartifactId=CRUDPersonService -Dversion=1.0 -Dpackaging=jar

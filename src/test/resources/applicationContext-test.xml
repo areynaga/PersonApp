@@ -31,7 +31,7 @@
 		<property name="brokerURL" value="vm://localhost:61616"/> </bean> -->
 
 	<bean id="atomikosJmsConnectionFactory" class="com.atomikos.jms.AtomikosConnectionFactoryBean">
-		<property name="uniqueResourceName" value="amq1" />
+		<property name="uniqueResourceName" value="jmsConFact" />
 		<property name="xaConnectionFactory" ref="jmsXaConnectionFactory" />
 	</bean>
 
@@ -42,7 +42,6 @@
 		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
 
-
 	<!-- define the activemq Camel component so we can integrate with the AMQ 
 		broker below -->
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
@@ -50,19 +49,13 @@
 		<property name="transacted" value="true" />
 		<!-- refer to the transaction manager -->
 		<property name="transactionManager" ref="jtaTransactionManager" />
-
 	</bean>
 
-
-
-	<!-- setup a local JMS Broker for testing purpose -->
-	<broker:broker id="my-broker" useJmx="false" persistent="false"
-		brokerName="localhost">
-		<broker:transportConnectors>
-			<broker:transportConnector uri="tcp://localhost:61616" />
-		</broker:transportConnectors>
-	</broker:broker>
-
+	<!-- setup a local JMS Broker for testing purpose --> 
+	<broker:broker id="my-broker"  
+		useJmx="false" persistent="false" brokerName="localhost"> <broker:transportConnectors> 
+		<broker:transportConnector uri="tcp://localhost:61616"/> </broker:transportConnectors> 
+	</broker:broker> 
 
 
 
@@ -75,21 +68,11 @@
 
 
 
-	<!-- <bean id="personServiceRoute" class="be.steria.datapoc.services.routes.MainServiceRoute" 
-		> <property name="nodesInformation" ref="nodesInformation" /> <property name="centralNodePredicate" 
-		ref="centralNodePredicate" /> </bean> <camelContext xmlns="http://camel.apache.org/schema/spring"> 
-		<camel:routeBuilder ref="personServiceRoute"/> </camelContext> -->
 
-	<bean id="fastDateFormat" class="org.apache.commons.lang.time.FastDateFormat"
-		factory-method="getInstance">
-		<constructor-arg value="hh_mm_ss" />
-	</bean>
-
-	<bean id="currentDate" class="java.util.Date" factory-bean="fastDateFormat"
-		factory-method="format">
-		<constructor-arg>
-			<bean class="java.util.Date" />
-		</constructor-arg>
+	<bean id="personServiceRoute" class="be.steria.datapoc.services.routes.MainServiceRoute">
+		<property name="nodesInformation" ref="nodesInformation" />
+		<property name="centralNodePredicate" ref="centralNodePredicate" />
+		<property name="serverSourcePredicate" ref="serverSourcePredicate" />
 	</bean>
 
 
@@ -106,43 +89,79 @@
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="dataSource" ref="dataSource" />
-		<property name="persistenceUnitName" value="PersonDBTest" />
+		<property name="persistenceUnitName" value="PersonDB" />
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
 		</property>
 	</bean>
 
 
-	<bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager"
+	<bean id="atomikosTransactionManager" 
+		depends-on="userTransactionService"
+		class="com.atomikos.icatch.jta.UserTransactionManager"
 		init-method="init" destroy-method="close">
-		<!-- when close is called, should we force transactions to terminate or 
-			not? -->
-		<property name="forceShutdown" value="false" />
+		<property name="forceShutdown" value="true" />
+
 	</bean>
 
 	<!-- this is some atomikos setup you must do -->
-	<bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+	<bean id="atomikosUserTransaction" 
+		depends-on="userTransactionService"
+		class="com.atomikos.icatch.jta.UserTransactionImp">
 		<property name="transactionTimeout" value="60" />
 
 	</bean>
 
-<!-- 
+
+
+
+	<bean id="basedir" class="java.lang.String">
+		<constructor-arg value="./temp/atomikos_logs_" />
+
+	</bean>
+
+	<bean id="fastDateFormat" class="org.apache.commons.lang.time.FastDateFormat"
+		factory-method="getInstance">
+		<constructor-arg value="hh_mm_ss_SSS" />
+	</bean>
+
+	<bean id="currentDate" class="java.util.Date" factory-bean="fastDateFormat"
+		factory-method="format">
+		<constructor-arg>
+			<bean class="java.util.Date" />
+		</constructor-arg>
+	</bean>
+	
+	
+	<bean id="curNodeId" class="java.lang.String">
+		<constructor-arg value="${nodes.current}" />
+	</bean>
+
+	<bean id="log_path" factory-bean="basedir" factory-method="concat">
+		<constructor-arg ref="currentDate" />
+	</bean>
+
+
+
 	<bean id="userTransactionService" class="com.atomikos.icatch.config.UserTransactionServiceImp"
+		
 		init-method="init" destroy-method="shutdownForce">
 		<constructor-arg>
+
 			<props>
 				<prop key="com.atomikos.icatch.service">com.atomikos.icatch.standalone.UserTransactionServiceFactory
 				</prop>
-				<prop key="com.atomikos.icatch.output_dir">./atomikos_logs</prop>
-				<prop key="com.atomikos.icatch.log_base_dir">./atomikos_logs</prop>
-				<prop key="com.atomikos.icatch.console_file_name">my_tm.out</prop>
-				<prop key="com.atomikos.icatch.log_base_name">my_tm.log</prop>
-				<prop key="com.atomikos.icatch.tm_unique_name">my_tm</prop>
-				<prop key="com.atomikos.icatch.console_log_level">INFO</prop>
+				<prop key="com.atomikos.icatch.output_dir">#{log_path}</prop>
+				<prop key="com.atomikos.icatch.log_base_dir">#{log_path}</prop>
+				<prop key="com.atomikos.icatch.lock_logs">false</prop>
+				<prop key="com.atomikos.icatch.no_file">true</prop>
+				<prop key="com.atomikos.icatch.hide_init_file_path">true</prop>
+				<prop key="com.atomikos.icatch.console_log_level">WARN</prop>
 			</props>
 		</constructor-arg>
 	</bean>
- -->
+
+
 
 	<bean id="jtaTransactionManager"
 		class="org.springframework.transaction.jta.JtaTransactionManager">
@@ -166,38 +185,52 @@
 	<bean id="centralNodePredicate" class="be.steria.datapoc.services.CentralNodePredicate">
 		<property name="nodesInformation" ref="nodesInformation" />
 	</bean>
+	
+	<bean id="serverSourcePredicate" class="be.steria.datapoc.services.ServerSourcePredicate">
+		<property name="nodesInformation" ref="nodesInformation" />
+	</bean>
 
 	<cxf:cxfEndpoint id="personEndpoint" address="/PersonService"
 		serviceClass="be.steria.datapoc.services.PersonService" />
 
 
 
-
+	
 
 	<bean id="nodeLogger" class="be.steria.datapoc.services.NodeLoggerImpl">
 		<property name="loggerAddress" value="${logger.address}" />
 	</bean>
 
 	<bean id="nodesInformation" class="be.steria.datapoc.services.NodesInformationImpl">
-		<property name="currentNodeId" value="${nodes.current}" />
+
 		<property name="nodeInfoAddress" value="${nodeInfo.address}" />
 	</bean>
+
+	
 
 	<bean id="serviceReplicator" class="be.steria.datapoc.services.ServiceReplicatorImpl">
 
 		<property name="nodesInformation" ref="nodesInformation" />
 	</bean>
 
+	<bean id="nodeControler" class="be.steria.datapoc.services.NodeControlerImpl">
+		<property name="currentNodeId" value="${nodes.current}" />
+		<property name="serviceRoute" ref="personServiceRoute" />
+	</bean>
+  
+	<jaxws:endpoint id="NodeControlerService"
+		implementorClass="be.steria.datapoc.services.NodeControler"
+		implementor="#nodeControler" address="/NodeControler" />
+		
+	<bean id="queryPersons" class="be.steria.datapoc.services.QueryPersonsImpl">
+		<property name="personDao" ref="personDao" />
+	</bean>
+  
+	<jaxws:endpoint id="QueryPersonsService"
+		implementorClass="be.steria.datapoc.services.QueryPersons"
+		implementor="#queryPersons" address="/QueryPersons" />
 
 	<context:annotation-config />
 
-
-	<bean id="requiredJta" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
-
-		<property name="transactionManager" ref="jtaTransactionManager" />
-
-		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
-
-	</bean>
 
 </beans>

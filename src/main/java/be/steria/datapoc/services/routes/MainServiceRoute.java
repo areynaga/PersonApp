@@ -3,9 +3,10 @@ package be.steria.datapoc.services.routes;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.springframework.beans.factory.annotation.Autowired;
+
 
 import be.steria.datapoc.services.CentralNodePredicate;
+import be.steria.datapoc.services.ServerSourcePredicate;
 import be.steria.datapoc.services.NodesInformation;
 import be.steria.datapoc.services.routes.InputQueueRoute;
 import be.steria.datapoc.services.routes.OutputQueueRoute;
@@ -18,7 +19,20 @@ public class MainServiceRoute extends RouteBuilder {
 
 	private CentralNodePredicate centralNodePredicate;
 	
+	private ServerSourcePredicate serverSourcePredicate;
 	
+
+	public ServerSourcePredicate getServerSourcePredicate() {
+		return serverSourcePredicate;
+	}
+
+
+
+	public void setServerSourcePredicate(ServerSourcePredicate serverSourcePredicate) {
+		this.serverSourcePredicate = serverSourcePredicate;
+	}
+
+
 
 	public NodesInformation getNodesInformation() {
 		return nodesInformation;
@@ -53,9 +67,11 @@ public class MainServiceRoute extends RouteBuilder {
 		DataFormat jaxb = new JaxbDataFormat("be.steria.datapoc.model");
 		
 		
+		
 		getContext().addRoutes(new SoapServiceRoute("cxf:bean:personEndpoint", jaxb, 
 				"activemq:queue:" + inputQueueName, 
-				"activemq:queue:" + outputQueueName));
+				"activemq:queue:" + outputQueueName,
+				serverSourcePredicate));
 		
 		getContext().addRoutes(new OutputQueueRoute(jaxb, 
 				"activemq:queue:" + outputQueueName));
@@ -65,6 +81,9 @@ public class MainServiceRoute extends RouteBuilder {
 		
 	}
 
+
+
+	
 	
 
 }

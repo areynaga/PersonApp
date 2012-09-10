@@ -5,9 +5,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.DataFormat;
 
-import be.steria.datapoc.EventLogger.model.NodeEvent;
 import be.steria.datapoc.model.CUDRequest;
-import be.steria.datapoc.services.NodeLogger;
 import be.steria.datapoc.services.ServerSourcePredicate;
 
 public class SoapServiceRoute extends RouteBuilder{
@@ -17,16 +15,19 @@ public class SoapServiceRoute extends RouteBuilder{
 	private String inputQueue;
 	private String outputQueue;
 	
-	private NodeLogger nodeLogger;
+	
+	private ServerSourcePredicate serverSourcePredicate;
 	
 	
 	public SoapServiceRoute(String cxfEndPoint, DataFormat jaxb,
-			String inputQueue, String outputQueue) {
+			String inputQueue, String outputQueue,
+			ServerSourcePredicate serverSourcePredicate) {
 		super();
 		this.cxfEndPoint = cxfEndPoint;
 		this.jaxb = jaxb;
 		this.inputQueue = inputQueue;
 		this.outputQueue = outputQueue;
+		this.serverSourcePredicate = serverSourcePredicate;
 	}
 
 
@@ -35,7 +36,7 @@ public class SoapServiceRoute extends RouteBuilder{
 	public void configure() throws Exception {
 		from(cxfEndPoint)
 		.choice()
-			.when(new ServerSourcePredicate())
+			.when(serverSourcePredicate)
 				.process(new Processor() {
 					public void process(Exchange exchange) throws Exception {
 						exchange.getOut().setBody(exchange.getIn().getBody(CUDRequest.class));
@@ -49,6 +50,7 @@ public class SoapServiceRoute extends RouteBuilder{
 				.beanRef("personProcessor", "processRequest")
 				.beanRef("serviceReplicator", "createReplicaForCentral")
 				.marshal(jaxb)
+				.to("log:out")
 				.inOnly(outputQueue)
 				.beanRef("personProcessor", "createResponse");
 		
@@ -56,14 +58,5 @@ public class SoapServiceRoute extends RouteBuilder{
 
 
 
-	public NodeLogger getNodeLogger() {
-		return nodeLogger;
-	}
-
-
-
-	public void setNodeLogger(NodeLogger nodeLogger) {
-		this.nodeLogger = nodeLogger;
-	}
 
 }

@@ -1,13 +1,13 @@
 package be.steria.datapoc.test.camelroutes;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Predicate;
+import java.io.File;
+
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.spi.Policy;
 import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -15,8 +15,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import be.steria.datapoc.model.Address;
 import be.steria.datapoc.model.CreatePersonRequest;
-
 import be.steria.datapoc.model.Person;
+import be.steria.datapoc.services.QueryPersons;
 import be.steria.datapoc.test.jaxb.CommonJAXBTools;
 
 public class TransactedInputQueueTest extends CamelSpringTestSupport {
@@ -33,6 +33,7 @@ public class TransactedInputQueueTest extends CamelSpringTestSupport {
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {
 		return new ClassPathXmlApplicationContext("applicationContext-test.xml");
+		
 	}
 	
 	
@@ -61,8 +62,6 @@ public class TransactedInputQueueTest extends CamelSpringTestSupport {
 		
 
 	}
-	
-	
 	
 	
 	@Before
@@ -95,7 +94,9 @@ public class TransactedInputQueueTest extends CamelSpringTestSupport {
 		
 		String outputXml = consumer.receiveBodyNoWait("activemq:queue:outputQueue", String.class);
 		
-		System.out.println(outputXml);
+		QueryPersons qryPersons = (QueryPersons) applicationContext.getBean("queryPersons");
+		
+		assertNotNull(qryPersons.getPersonById("ABC"));
 		
 		assertEquals(xml, outputXml);
 		
@@ -103,4 +104,16 @@ public class TransactedInputQueueTest extends CamelSpringTestSupport {
 	
 	
 
+
+
+	@Override
+	@After
+	public void tearDown() throws Exception {
+	
+		super.tearDown();
+		FileUtils.deleteDirectory(new File("./temp"));
+	}
+
+	
+	
 }

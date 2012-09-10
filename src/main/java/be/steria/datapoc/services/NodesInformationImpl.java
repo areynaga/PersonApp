@@ -3,17 +3,25 @@ package be.steria.datapoc.services;
 import java.util.List;
 
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 
-/**
- * @author areynaga
- * Static nodes information implementation; in this scenario there are two servers:
- * SERVER_A, SERVER_B, the cetral server is SERVER_A
- */
 public class NodesInformationImpl implements NodesInformation {
 
-	private String currentNodeId;
+	@Autowired
+	private NodeControler nodeControler;
+	
+	public NodeControler getNodeControler() {
+		return nodeControler;
+	}
+
+
+	public void setNodeControler(NodeControler nodeControler) {
+		this.nodeControler = nodeControler;
+	}
+
+
 	private String nodeInfoAddress;
 	private JaxWsProxyFactoryBean clientFactory;
 	
@@ -53,12 +61,12 @@ public class NodesInformationImpl implements NodesInformation {
 		return ((NodeInfoService)clientFactory.create()).getCentralNodeId();
 	}
 
+
 	public String getCurrentNodeId() {
-		return this.currentNodeId;
+		
+		return String.valueOf(nodeControler.getCurrentNodeId());
 	}
 
-	public void setCurrentNodeId(String currentNodeId) {
-		this.currentNodeId = currentNodeId;
-	}
+	
 
 }

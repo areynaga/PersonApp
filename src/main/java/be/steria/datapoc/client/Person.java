@@ -1,27 +1,14 @@
 
-package be.steria.datapoc.model;
+package be.steria.datapoc.client;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.w3._2001.xmlschema.Adapter1;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 
 /**
@@ -55,30 +42,14 @@ import org.w3._2001.xmlschema.Adapter1;
     "birthDate",
     "address"
 })
-@Entity
 public class Person {
 
-	@Id
-	@Column(name="ID_PERSON")
     @XmlElement(required = true)
     protected String idPerson;
-	
-	@Column(name="FIRST_NAME")
     protected String firstName;
-    
-	@Column(name="LAST_NAME")
-	protected String lastName;
-    
-	@XmlElement(type = String.class)
-    @XmlJavaTypeAdapter(Adapter1 .class)
+    protected String lastName;
     @XmlSchemaType(name = "date")
-    @Temporal(TemporalType.DATE)
-	@Column(name="BIRTH_DATE")
-    protected Date birthDate;
-    
-    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
-    @JoinTable(name = "PERSON_ADDRESS", joinColumns = @JoinColumn(name = "ID_PERSON"), 
-    	inverseJoinColumns = @JoinColumn(name = "ID_ADDRESS"))
+    protected XMLGregorianCalendar birthDate;
     protected List<Address> address;
 
     /**
@@ -158,10 +129,10 @@ public class Person {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link XMLGregorianCalendar }
      *     
      */
-    public Date getBirthDate() {
+    public XMLGregorianCalendar getBirthDate() {
         return birthDate;
     }
 
@@ -170,10 +141,10 @@ public class Person {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setBirthDate(Date value) {
+    public void setBirthDate(XMLGregorianCalendar value) {
         this.birthDate = value;
     }
 
@@ -206,8 +177,4 @@ public class Person {
         return this.address;
     }
 
-	
-    
-    
-    
 }
